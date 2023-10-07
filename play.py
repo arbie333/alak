@@ -1,7 +1,5 @@
 import pickle
-import numpy.random as random
 import numpy as np
-from tqdm import tqdm
 from colorama import Fore, Back, Style
 from sklearn.neural_network import MLPRegressor, MLPClassifier
 from itertools import product
