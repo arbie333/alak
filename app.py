@@ -4,15 +4,6 @@
 
 # cockie session
 
-# return json:
-# suicide : boolean
-# capture : boolean
-# captures : []
-# olg_position
-# new_position
-# board : []
-# win : boolean
-
 # def get_db_connection():
 #     conn = sqlite3.connect('database.db')
 #     conn.row_factory = sqlite3.Row

@@ -71,7 +71,7 @@ class Alak:
             else:
                 print(Fore.WHITE + 'o : {}->{}'.format(num2abcd(original_loc), num2abcd(next_loc)))
             
-        return capture
+        return original_loc, next_loc, capture
     
     def get_ori_loc(self, turn):
         if turn == 1:
@@ -146,7 +146,6 @@ class Alak:
                 moves.remove(d)
             
             probas = []
-            new_moves = []
             for move in moves:
                 new_board = copy.deepcopy(self.board)
                 new_board, capture = self.checkCapture(new_board, move[0], move[1], turn)
@@ -268,7 +267,7 @@ class Alak:
         
         # x move
         turn = 1
-        gain = self.move(turn)
+        original_loc, next_loc, gain = self.move(turn)
         
         board1 = self.board.copy()
         Board[:self.board_size] = board1
@@ -284,11 +283,11 @@ class Alak:
             if self.print_result:
                 print(Fore.RED + "x won!")
             self.boards.append(Board)
-            return Board
+            return original_loc, next_loc, gain
         
         # o move
         turn = -1
-        gain = self.move(turn)
+        original_loc, next_loc, gain = self.move(turn)
         
         board2 = self.board.copy()
         Board[self.board_size+1:] = board2
@@ -304,7 +303,7 @@ class Alak:
             
         self.boards.append(Board)
         
-        return Board
+        return original_loc, next_loc, gain
         
     def won(self): # 1 -> x won, 0 -> keep playing, -> -1 -> o won
         if len(self.o_pos) <= 1:
@@ -321,13 +320,19 @@ class Alak:
             self.print_board(self.board)
         
         round_count = 0
+        gain = 0
         while self.won() == 0:
-            self.one_round()
+            original_loc, next_loc, gain = self.one_round()
             round_count += 1
         
-        X = self.boards
-        y = np.ones(round_count, dtype=np.int8) * self.won()
-        return X, y
+        # Need to be change
+        suicide = False
+        # gain
+        old_position = original_loc
+        new_position = next_loc
+        board = self.board
+
+        return suicide, gain, old_position, new_position, board, self.won()
     
     def print_board(self, Board):
         boardStr = ''.join([str(i) for i in Board])
@@ -350,3 +355,20 @@ def official_games(side):
     game.play()
     
 # official_games('o', clf)
+
+def getJson(old, new):
+    suicide = False
+    captures = []
+    old_position = 0
+    new_position = 7
+    board = []
+    win = False
+    jsonStr = jsonify({
+            'suicide': suicide,
+            'captured': captures,
+            'olg_position': old_position,
+            'new_position': new_position,
+            'board': board,
+            'win': win
+    })
+    return jsonStr
