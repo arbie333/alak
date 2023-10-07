@@ -1,23 +1,42 @@
-import sqlite3
-from flask import Flask, render_template
-import play # the alak playing model
+# @app.route('/')
+# def dynamic_page():
+#     return play.official_games('o')
 
-def get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+# cockie session
+
+# return json:
+# suicide : boolean
+# capture : boolean
+# captures : []
+# olg_position
+# new_position
+# board : []
+# win : boolean
+
+# def get_db_connection():
+#     conn = sqlite3.connect('database.db')
+#     conn.row_factory = sqlite3.Row
+#     return conn
+
+# import sqlite3
+import test_api
+import sys
+from flask import Flask, render_template, jsonify, request, Blueprint
+
+import play # the alak playing model
 
 app = Flask(__name__)
 
-@app.route('/')
-def dynamic_page():
-    return play.official_games('o')
+# api test
+if test_api.test_blueprint not in sys.modules:
+    if isinstance(test_api.test_blueprint, Blueprint):
+        app.register_blueprint(test_api.test_blueprint)
 
 @app.route('/')
 def index():
-    conn = get_db_connection()
+    # conn = get_db_connection()
     # posts = conn.execute('SELECT * FROM posts').fetchall()
-    conn.close()
+    # conn.close()
     return render_template('index.html')
 
 @app.route('/game')
@@ -40,3 +59,6 @@ def signIn():
 @app.route('/signUp')
 def signUp():
     return render_template('signUp.html')
+    
+if __name__ == "__main__":
+    app.run()
