@@ -1,27 +1,15 @@
 import pickle
 import numpy as np
-from colorama import Fore, Back, Style
-from sklearn.neural_network import MLPRegressor, MLPClassifier
 from itertools import product
 import copy
 import pickle
 
-def abcd2num(char):
-    if char in ['a', 'b', 'c', 'd']:
-        d = {'a':10, 'b':11, 'c':12, 'd':13}
-        return d[char]
-    elif char in '0123456789':
-        return int(char)
-    else:
-        return char
+from flask import jsonify, Blueprint
 
-def num2abcd(num):
-    if num in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
-        return num
-    else:
-        d = {10:'a', 11:'b', 12:'c', 13:'d'}
-        return d[num]
-    
+alak_blueprint = Blueprint('alak_blueprint', __name__)
+
+@alak_blueprint.route('/<int:old>/<int:new>', methods = ['GET'])
+
 class Alak:
     def __init__(self, moveX = 'random', moveO = 'random', print_result = False, clf=None):
         self.board = np.array([1, 1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1, -1], dtype=np.int8)
@@ -42,23 +30,19 @@ class Alak:
         self.x_pos = np.asarray(self.board>0).nonzero()[0]
         self.__pos = np.asarray(self.board==0).nonzero()[0]
         self.o_pos = np.asarray(self.board<0).nonzero()[0]
-        
+    
     def move(self, turn):
         if turn == 1:
             if self.moveX == 'interactive':
                 original_loc, next_loc, capture = self.move_interactive(turn)
             if self.moveX == 'model':
                 original_loc, next_loc, capture = self.move_model(turn)
-            if self.moveX == 'random':
-                original_loc, next_loc, capture = self.move_random(turn)
                 
         else:
             if self.moveO == 'interactive':
                 original_loc, next_loc, capture = self.move_interactive(turn)
             if self.moveO == 'model':
                 original_loc, next_loc, capture = self.move_model(turn)
-            if self.moveO == 'random':
-                original_loc, next_loc, capture = self.move_random(turn)
 
         self.board[next_loc] = self.board[original_loc]
         self.board[original_loc] = 0
@@ -67,9 +51,9 @@ class Alak:
 
         if self.print_result:
             if turn == 1:
-                print(Fore.WHITE + 'x : {}->{}'.format(num2abcd(original_loc), num2abcd(next_loc)))
+                print('x : {}->{}'.format(original_loc, next_loc))
             else:
-                print(Fore.WHITE + 'o : {}->{}'.format(num2abcd(original_loc), num2abcd(next_loc)))
+                print('o : {}->{}'.format(original_loc, next_loc))
             
         return original_loc, next_loc, capture
     
@@ -81,17 +65,17 @@ class Alak:
             pos = self.o_pos
             inputStr = 'o from: '
             
-        original_loc = abcd2num(input(inputStr))
+        original_loc = int(input(inputStr))
         while original_loc not in pos:
-            print(Fore.WHITE + 'Invalid move: try again')
-            original_loc = abcd2num(input(inputStr))
+            print('Invalid move: try again')
+            original_loc = int(input(inputStr))
         return original_loc
     
     def get_next_loc(self):
-        next_loc = int(abcd2num(input('move to: ')))
+        next_loc = int(input('move to: '))
         while next_loc not in self.__pos:
-            print(Fore.WHITE + 'Invalid move: try again')
-            next_loc = abcd2num(input('move to: '))
+            print('Invalid move: try again')
+            next_loc = int(input('move to: '))
         return next_loc
     
     def move_interactive(self, turn):
@@ -100,7 +84,7 @@ class Alak:
 
         b, capture = self.checkCapture(self.board, original_loc, next_loc, turn)
         if capture == 0 and self.isSuicide(original_loc, next_loc, turn):
-            print(Fore.WHITE + '{}->{} is a suicide move'.format(num2abcd(original_loc), num2abcd(next_loc)))
+            print('{}->{} is a suicide move'.format(original_loc, next_loc))
             self.takeSuicide(original_loc, next_loc, turn)
             self.update_location()
 
@@ -276,12 +260,12 @@ class Alak:
         if self.print_result:
             self.print_board(board1)
             if gain > 0:
-                print(Fore.WHITE + 'gain:{}\n'.format(gain))
+                print('gain:{}\n'.format(gain))
             else:
-                print(Fore.BLUE + 'gain:{}\n'.format(gain))
+                print('gain:{}\n'.format(gain))
         if self.won() == 1:
             if self.print_result:
-                print(Fore.RED + "x won!")
+                print("x won!")
             self.boards.append(Board)
             return original_loc, next_loc, gain
         
@@ -295,11 +279,11 @@ class Alak:
         if self.print_result:
             self.print_board(board2)
             if gain > 0:
-                print(Fore.RED + 'gain:{}\n'.format(gain))
+                print('gain:{}\n'.format(gain))
             else:
-                print(Fore.BLUE + 'gain:{}\n'.format(gain))
+                print('gain:{}\n'.format(gain))
             if self.won() == -1:
-                print(Fore.RED + "o won!")
+                print("o won!")
             
         self.boards.append(Board)
         
@@ -333,15 +317,39 @@ class Alak:
         board = self.board
 
         return suicide, gain, old_position, new_position, board, self.won()
-    
+
     def print_board(self, Board):
         boardStr = ''.join([str(i) for i in Board])
         boardStr = boardStr.replace('0', '_').replace('-1', 'o').replace('1', 'x').replace('2', ' ')
         index = '0123456789abcd'
         print()
-        print(Fore.WHITE + boardStr)
-        print(Fore.WHITE + index)
+        print(boardStr)
+        print(index)
         print()
+
+    def getJson(old, new):
+        # add the method of the game and get the return value
+
+        board = []
+        captures = []
+        old_position = 0
+        new_position = 7
+        valid = True
+        suicide = False
+        win = False
+
+        jsonStr = jsonify({
+            'board': board,
+            'captured': captures,
+            'olg_position': old_position,
+            'new_position': new_position,
+            'suicide': suicide,
+            'valid': valid,
+            'win': win
+        })
+        
+        return jsonStr
+    
 
 def official_games(side):
     with open('my_training_model', 'rb') as file:
@@ -355,20 +363,3 @@ def official_games(side):
     game.play()
     
 # official_games('o', clf)
-
-def getJson(old, new):
-    suicide = False
-    captures = []
-    old_position = 0
-    new_position = 7
-    board = []
-    win = False
-    jsonStr = jsonify({
-            'suicide': suicide,
-            'captured': captures,
-            'olg_position': old_position,
-            'new_position': new_position,
-            'board': board,
-            'win': win
-    })
-    return jsonStr

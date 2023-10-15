@@ -16,3 +16,27 @@ def home():
 @test_blueprint.route('/square/<int:num>', methods = ['GET']) 
 def disp(num): 
     return jsonify({'data': num**2})
+
+@test_blueprint.route('/<int:old>/<int:new>', methods = ['GET']) 
+def getJson(old, new):
+    # add the method of the game and get the return value
+
+    valid = True
+    suicide = False
+    captures = []
+    old_position = 0
+    new_position = 7
+    board = []
+    win = False
+
+    jsonStr = jsonify({
+        'valid': valid,
+        'suicide': suicide,
+        'captured': captures,
+        'olg_position': old_position,
+        'new_position': new_position,
+        'board': board,
+        'win': win
+    })
+    
+    return jsonStr

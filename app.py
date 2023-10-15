@@ -12,7 +12,7 @@
 # import sqlite3
 import test_api
 import sys
-from flask import Flask, render_template, jsonify, request, Blueprint
+from flask import Flask, render_template, Blueprint
 
 import play # the alak playing model
 
@@ -22,6 +22,11 @@ app = Flask(__name__)
 if test_api.test_blueprint not in sys.modules:
     if isinstance(test_api.test_blueprint, Blueprint):
         app.register_blueprint(test_api.test_blueprint)
+
+# the model
+if play.alak_blueprint not in sys.modules:
+    if isinstance(play.alak_blueprint, Blueprint):
+        app.register_blueprint(play.alak_blueprint, url_prefix='/game')
 
 @app.route('/')
 def index():
