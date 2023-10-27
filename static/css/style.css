@@ -27,3 +27,7 @@
     display: block;
     border-radius: 10px;
 }
+
+.draggable {
+    cursor: move;
+}

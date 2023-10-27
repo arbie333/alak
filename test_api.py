@@ -4,6 +4,7 @@
 # this returns 100 (square of 10) 
 
 from flask import Blueprint, jsonify, request
+from alak import *
 
 test_blueprint = Blueprint('test_blueprint', __name__)
 

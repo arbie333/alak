@@ -4,6 +4,7 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="{{ url_for('static', filename='javascript/snap.svg-min.js') }}"></script>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -11,6 +12,7 @@
 
     <title>{% block title %} {% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="/static/Logo.png">
+    {% block head %} {% endblock %}
   </head>
   <body style="background-image: url('static/background.jpg'); background-size: cover; height: 100%;">
     <nav class="navbar navbar-expand-md navbar-light bg-light" style="opacity: 0.75;">

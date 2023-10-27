@@ -13,8 +13,9 @@
 import test_api
 import sys
 from flask import Flask, render_template, Blueprint
+import numpy as np
 
-import play # the alak playing model
+import alak # the alak playing model
 
 app = Flask(__name__)
 
@@ -24,9 +25,9 @@ if test_api.test_blueprint not in sys.modules:
         app.register_blueprint(test_api.test_blueprint)
 
 # the model
-if play.alak_blueprint not in sys.modules:
-    if isinstance(play.alak_blueprint, Blueprint):
-        app.register_blueprint(play.alak_blueprint, url_prefix='/game')
+# if alak.alak_blueprint not in sys.modules:
+#     if isinstance(alak.alak_blueprint, Blueprint):
+#         app.register_blueprint(alak.alak_blueprint, url_prefix='/game')
 
 @app.route('/')
 def index():
@@ -55,6 +56,20 @@ def signIn():
 @app.route('/signUp')
 def signUp():
     return render_template('signUp.html')
-    
+
+@app.route('/test')
+def test():
+    return render_template('test.html')
+
+@app.route('/move/<int:old>/<int:new>/')
+def get_move(old, new):
+    print(get_move)
+    game = alak.Alak(moveX='model', moveO='interactive', print_result=True)
+    board = np.array([ 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, -1, -1, -1, -1 ])
+    json = game.getNext(old, new, board)
+    print("Json get!", json)
+    print()
+    return json
+
 if __name__ == "__main__":
     app.run()

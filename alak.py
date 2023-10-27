@@ -4,14 +4,14 @@ from itertools import product
 import copy
 import pickle
 
-from flask import jsonify, Blueprint
+from flask import Blueprint, jsonify
+import json
 
-alak_blueprint = Blueprint('alak_blueprint', __name__)
 
-@alak_blueprint.route('/<int:old>/<int:new>', methods = ['GET'])
+# alak_blueprint = Blueprint('alak_blueprint', __name__)
 
 class Alak:
-    def __init__(self, moveX = 'random', moveO = 'random', print_result = False, clf=None):
+    def __init__(self, moveX = 'random', moveO = 'random', print_result = False):
         self.board = np.array([1, 1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1, -1], dtype=np.int8)
         self.board_size = len(self.board)
         self.boards = []
@@ -23,26 +23,43 @@ class Alak:
         self.print_result = print_result
         self.moveX = moveX
         self.moveO = moveO
+
+        with open('my_training_model', 'rb') as file:
+            self.clf = pickle.load(file)
         
-        self.clf = clf
-        
+        self.json = {
+            'board': self.board.tolist(),
+            'captured': [],
+            'old_position': int(-1),
+            'new_position': int(-1),
+            'suicide': False,
+            'valid': False,
+            'win': False
+        }
+
     def update_location(self):
         self.x_pos = np.asarray(self.board>0).nonzero()[0]
         self.__pos = np.asarray(self.board==0).nonzero()[0]
         self.o_pos = np.asarray(self.board<0).nonzero()[0]
     
-    def move(self, turn):
+    def move(self, turn, old, new):
         if turn == 1:
             if self.moveX == 'interactive':
-                original_loc, next_loc, capture = self.move_interactive(turn)
+                original_loc, next_loc, capture = self.move_interactive(turn, old, new)
             if self.moveX == 'model':
                 original_loc, next_loc, capture = self.move_model(turn)
+                self.json['old_position'] = original_loc
+                self.json['new_position'] = next_loc
+                self.json["captured"] = capture
                 
         else:
             if self.moveO == 'interactive':
-                original_loc, next_loc, capture = self.move_interactive(turn)
+                original_loc, next_loc, capture = self.move_interactive(turn, old, new)
             if self.moveO == 'model':
                 original_loc, next_loc, capture = self.move_model(turn)
+                self.json['old_position'] = original_loc
+                self.json['new_position'] = next_loc
+                self.json["captured"] = capture
 
         self.board[next_loc] = self.board[original_loc]
         self.board[original_loc] = 0
@@ -57,7 +74,7 @@ class Alak:
             
         return original_loc, next_loc, capture
     
-    def get_ori_loc(self, turn):
+    def get_ori_loc(self, turn, original_loc):
         if turn == 1:
             pos = self.x_pos
             inputStr = 'x from: '
@@ -65,28 +82,30 @@ class Alak:
             pos = self.o_pos
             inputStr = 'o from: '
             
-        original_loc = int(input(inputStr))
+        # original_loc = int(input(inputStr))
         while original_loc not in pos:
             print('Invalid move: try again')
             original_loc = int(input(inputStr))
+        
         return original_loc
     
-    def get_next_loc(self):
-        next_loc = int(input('move to: '))
+    def get_next_loc(self, next_loc):
+        # next_loc = int(input('move to: '))
         while next_loc not in self.__pos:
             print('Invalid move: try again')
             next_loc = int(input('move to: '))
         return next_loc
     
-    def move_interactive(self, turn):
-        original_loc = self.get_ori_loc(turn)
-        next_loc = self.get_next_loc()
+    def move_interactive(self, turn, old, new):
+        original_loc = self.get_ori_loc(turn, old)
+        next_loc = self.get_next_loc(new)
 
         b, capture = self.checkCapture(self.board, original_loc, next_loc, turn)
         if capture == 0 and self.isSuicide(original_loc, next_loc, turn):
             print('{}->{} is a suicide move'.format(original_loc, next_loc))
             self.takeSuicide(original_loc, next_loc, turn)
             self.update_location()
+            self.json['suicide'] = True
 
         return original_loc, next_loc, capture
     
@@ -246,46 +265,26 @@ class Alak:
         
         return board, capture
         
-    def one_round(self):
-        Board = np.zeros(self.board_size * 2 + 1, dtype=np.int8)
+    def one_round(self, old, new, board):
+#         Board = np.zeros(self.board_size * 2 + 1, dtype=np.int8)
         
+        self.board = board
         # x move
         turn = 1
-        original_loc, next_loc, gain = self.move(turn)
+        original_loc, next_loc, gain = self.move(turn, old, new)
         
-        board1 = self.board.copy()
-        Board[:self.board_size] = board1
-        Board[self.board_size] = 2
-        
-        if self.print_result:
-            self.print_board(board1)
-            if gain > 0:
-                print('gain:{}\n'.format(gain))
-            else:
-                print('gain:{}\n'.format(gain))
-        if self.won() == 1:
-            if self.print_result:
-                print("x won!")
-            self.boards.append(Board)
-            return original_loc, next_loc, gain
+#         board1 = self.board.copy()
+#         Board[:self.board_size] = board1
+#         Board[self.board_size] = 2
         
         # o move
         turn = -1
-        original_loc, next_loc, gain = self.move(turn)
+        original_loc, next_loc, gain = self.move(turn, old, new)
         
-        board2 = self.board.copy()
-        Board[self.board_size+1:] = board2
-
-        if self.print_result:
-            self.print_board(board2)
-            if gain > 0:
-                print('gain:{}\n'.format(gain))
-            else:
-                print('gain:{}\n'.format(gain))
-            if self.won() == -1:
-                print("o won!")
-            
-        self.boards.append(Board)
+#         board2 = self.board.copy()
+#         Board[self.board_size+1:] = board2
+        
+#         self.boards.append(Board)
         
         return original_loc, next_loc, gain
         
@@ -306,7 +305,7 @@ class Alak:
         round_count = 0
         gain = 0
         while self.won() == 0:
-            original_loc, next_loc, gain = self.one_round()
+            original_loc, next_loc, gain = self.one_round(old, new)
             round_count += 1
         
         # Need to be change
@@ -327,39 +326,30 @@ class Alak:
         print(index)
         print()
 
-    def getJson(old, new):
-        # add the method of the game and get the return value
+    def getNext(self, old, new, board):
+        self.one_round(old, new, board)
 
-        board = []
-        captures = []
-        old_position = 0
-        new_position = 7
-        valid = True
-        suicide = False
-        win = False
+        self.json['board'] = self.board.tolist()
+        self.json['old_position'] = int(self.json['old_position'])
+        self.json['new_position'] = int(self.json['new_position'])
 
-        jsonStr = jsonify({
-            'board': board,
-            'captured': captures,
-            'olg_position': old_position,
-            'new_position': new_position,
-            'suicide': suicide,
-            'valid': valid,
-            'win': win
-        })
-        
+        # self.json['captured'] = self.json['captured']
+        jsonStr = json.dumps(self.json, indent = 4)
+
         return jsonStr
-    
 
-def official_games(side):
-    with open('my_training_model', 'rb') as file:
-        clf = pickle.load(file)
-    
-    if side == 'x':
-        game = Alak(moveX='model', moveO='interactive', print_result=True, clf=clf)
-    elif side == 'o':
-        game = Alak(moveX='interactive', moveO='model', print_result=True, clf=clf)
+# def official_games(side):
+#     if side == 'x':
+#         game = Alak(moveX='model', moveO='interactive', print_result=True)
+#     elif side == 'o':
+#         game = Alak(moveX='interactive', moveO='model', print_result=True)
 
-    game.play()
-    
+#     # game.play()
+#     game.getNext(0, 1)
+
 # official_games('o', clf)
+
+if __name__ == "__main__":
+    alak = Alak(moveX='model', moveO='interactive', print_result=True)
+    board = [ 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, -1, -1, -1, -1 ]
+    alak.getNext(0, 1, board)

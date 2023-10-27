@@ -2,6 +2,38 @@
 
 {% block title %}Alak{% endblock %}
 
+{% block head %}
+    <script type="text/javascript">
+        var startX = 100;
+        var startY = 100;
+    
+        function init() {
+            Snap("#button").click(resetFcn);
+            Snap("#buttonText").click(resetFcn);
+            Snap("#circle").drag(dragMove, dragStart, dragEnd);
+        }
+    
+        function resetFcn(evt) {
+            Snap("#circle").attr({cx: 100, cy: 100});
+        }
+        
+        function dragStart(x, y, evt) {
+            // figure out where the circle currently is
+            startX = parseInt(Snap("#circle").attr("cx"), 10);
+            startY = parseInt(Snap("#circle").attr("cy"), 10);
+        }
+    
+        function dragMove(dx, dy, x, y, evt) {
+            Snap("#circle").attr({cx: (startX + dx), cy: (startY + dy)});
+        }
+    
+        function dragEnd(evt) {
+            // no action required
+        }
+  
+    </script>
+{% endblock %}
+
 {% block content %}
     <p class="text-center pt-5">00:00</p>
     <!--body onmousemove="coordinate(event)"> 
@@ -9,10 +41,9 @@
         <input type="text" id="X"> 
     </body-->
 
-    <svg id="svg" viewBox="-7 -12 84 30" xmlns="http://www.w3.org/2000/svg">
-        <path stroke="#401900" stroke-width="0.1" fill="none" d="M0,0h70v5h-70z" />
+    <svg id="svg" viewBox="-7 -12 84 30" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <path id ="board" stroke="#401900" stroke-width="0.1" fill="none" d="M0,0h70v5h-70z" />
         <path stroke="#401900" stroke-width="0.1" fill="none" d="M0,0v5 M5,0v5 M10,0v5 M15,0v5 M20,0v5 M25,0v5 M30,0v5 M35,0v5 M40,0v5 M45,0v5 M50,0v5 M55,0v5 M60,0v5 M65,0v5 M70,0v5"/>
-        
         <use id="piece" href="#piece-black" x="2.5" y="2.5"/>
         <use id="piece" href="#piece-black" x="7.5" y="2.5"/>
         <use id="piece" href="#piece-black" x="12.5" y="2.5"/>
@@ -29,7 +60,15 @@
         <a class="btn btn-warning m-1 mx-auto" style="font-size: 12px; font-weight: 300; border-radius: 25px; color: white;" href="#">RESTART</a>
     </div>
 
-    <script type="text/javascript">
-        Draggable.create(".piece");
-    </script>
+    <div style="text-align:center" onload="init()">
+        <svg width="600" height="400" viewBox="0 0 200 200"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink">
+        
+            <circle id="circle" cx="100" cy="100" r="30"
+                style="fill:#0a7a20; stroke: black"/>
+        </svg>
+    </div>
+
+
 {% endblock %}
