@@ -61,14 +61,11 @@ def signUp():
 def test():
     return render_template('test.html')
 
-@app.route('/move/<int:old>/<int:new>/')
-def get_move(old, new):
-    print(get_move)
-    game = alak.Alak(moveX='model', moveO='interactive', print_result=True)
-    board = np.array([ 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, -1, -1, -1, -1 ])
+@app.route('/move/<int:old>/<int:new>/<board>')
+def get_move(old, new, board):
+    game = alak.Alak(moveX='interactive', moveO='model', print_result=True)
     json = game.getNext(old, new, board)
-    print("Json get!", json)
-    print()
+
     return json
 
 if __name__ == "__main__":

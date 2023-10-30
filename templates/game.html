@@ -4,71 +4,156 @@
 
 {% block head %}
     <script type="text/javascript">
-        var startX = 100;
-        var startY = 100;
-    
+        var old_move;
+        var next_move;
+
+        const board = [];
+        board.push("#piece0", "#piece1", "#piece2", "#piece3", "#piece4", "", "", "", "", "#piece5", "#piece6", "#piece7", "#piece8", "#piece9");
+        const boardForAPI = [];
+        boardForAPI.push(1, 1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1, -1);
+
+        window.addEventListener("load", function() {
+            init();
+        })
+        
         function init() {
-            Snap("#button").click(resetFcn);
-            Snap("#buttonText").click(resetFcn);
-            Snap("#circle").drag(dragMove, dragStart, dragEnd);
-        }
-    
-        function resetFcn(evt) {
-            Snap("#circle").attr({cx: 100, cy: 100});
+            console.log("init");
+            Snap("#piece0").drag(dragMove, dragStart, dragEnd);
+            Snap("#piece1").drag(dragMove, dragStart, dragEnd);
+            Snap("#piece2").drag(dragMove, dragStart, dragEnd);
+            Snap("#piece3").drag(dragMove, dragStart, dragEnd);
+            Snap("#piece4").drag(dragMove, dragStart, dragEnd);
+            /*
+            Snap("#piece5").drag(dragMove, dragStart, dragEnd);
+            Snap("#piece6").drag(dragMove, dragStart, dragEnd);
+            Snap("#piece7").drag(dragMove, dragStart, dragEnd);
+            Snap("#piece8").drag(dragMove, dragStart, dragEnd);
+            Snap("#piece9").drag(dragMove, dragStart, dragEnd);
+            */
         }
         
         function dragStart(x, y, evt) {
-            // figure out where the circle currently is
-            startX = parseInt(Snap("#circle").attr("cx"), 10);
-            startY = parseInt(Snap("#circle").attr("cy"), 10);
+            sX = parseFloat(this.attr("cx"));
+            sY = parseFloat(this.attr("cy"));
         }
-    
+        
         function dragMove(dx, dy, x, y, evt) {
-            Snap("#circle").attr({cx: (startX + dx), cy: (startY + dy)});
+            this.attr({cx: (sX + (dx/17)), cy: (sY + (dy/17))});
         }
-    
+        
         function dragEnd(evt) {
-            // no action required
+            old_move = Math.floor(sX/5);
+            next_move = Math.floor(parseFloat(this.attr("cx"))/5);
+
+            this.attr({cx: next_move * 5 + 2.5, cy: 2.5});
+
+            // check valid
+            if (board[next_move] != "") {
+                this.attr({cx: sX, cy: sY});
+                return;
+            }
+            console.log("the move is valid");
+
+            board[next_move] = board[old_move];
+            board[old_move] = "";
+
+            getAPIAndUpdateBoard();
         }
-  
+
+        function cleanCapture(captured) {
+            console.log("cleanCapture", captured);
+            for (let i = 0; i < captured.length; i++) {
+                Snap(board[captured[i]]).attr({cx: 100, cy: 100});
+                board[captured[i]] = "";
+            }
+        }
+
+        async function getAPIAndUpdateBoard() {
+            console.log("getAPI begin " + boardForAPI);
+            const response = await fetch("move/" + old_move + "/" + next_move + "/" + boardForAPI);
+            const move = await response.json();
+            /*
+            if (move.valid == false) {
+                this.attr({cx: sX, cy: sY});
+            }
+            */
+            console.log(move);
+            cleanCapture(move.blackCaptured);
+
+            var pieceID = board[move.old_position];
+            var newX =  move.new_position * 5 + 2.5;
+            Snap(pieceID).attr({cx: newX, cy: 2.5});
+
+            cleanCapture(move.whiteCaptured);
+
+            board[move.old_position] = "";
+            board[move.new_position] = pieceID;
+            updateBoardForAPI();
+            console.log(boardForAPI);
+        }
+
+        // time counter
+        var minutesLabel = document.getElementById("minutes");
+        var secondsLabel = document.getElementById("seconds");
+        var totalSeconds = 0;
+        setInterval(setTime, 1000);
+
+        function setTime() {
+            ++totalSeconds;
+            document.getElementById('seconds').innerHTML = pad(totalSeconds % 60);
+            document.getElementById('minutes').innerHTML = pad(parseInt(totalSeconds / 60));
+        }
+
+        function pad(val) {
+            var valString = val + "";
+            if (valString.length < 2) {
+                return "0" + valString;
+            } else {
+                return valString;
+            }
+        }
+
+        function updateBoardForAPI() {
+            console.log("updateBoardForAPI");
+            for (let i = 0; i < board.length; i++) {
+                if (board[i] == "") {
+                    boardForAPI[i] = 0;
+                } else if (parseInt(board[i].substring(board[i].length - 1)) < 5) {
+                    boardForAPI[i] = 1;
+                } else {
+                    boardForAPI[i] = -1;
+                }
+            }
+        }
     </script>
 {% endblock %}
 
 {% block content %}
-    <p class="text-center pt-5">00:00</p>
+    <div class="text-center pt-5">
+        <p id="minutes"></p>:<p id="seconds"></p>
+    </div>
     <!--body onmousemove="coordinate(event)"> 
         X-coordinate 
-        <input type="text" id="X"> 
+        <input type="text" id="X">
     </body-->
 
     <svg id="svg" viewBox="-7 -12 84 30" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
         <path id ="board" stroke="#401900" stroke-width="0.1" fill="none" d="M0,0h70v5h-70z" />
         <path stroke="#401900" stroke-width="0.1" fill="none" d="M0,0v5 M5,0v5 M10,0v5 M15,0v5 M20,0v5 M25,0v5 M30,0v5 M35,0v5 M40,0v5 M45,0v5 M50,0v5 M55,0v5 M60,0v5 M65,0v5 M70,0v5"/>
-        <use id="piece" href="#piece-black" x="2.5" y="2.5"/>
-        <use id="piece" href="#piece-black" x="7.5" y="2.5"/>
-        <use id="piece" href="#piece-black" x="12.5" y="2.5"/>
-        <use id="piece" href="#piece-black" x="17.5" y="2.5"/>
-        <use id="piece" href="#piece-black" x="22.5" y="2.5"/>
+        <circle id="piece0" r="1.9" fill="#333333" filter="url(#outer-shadow)" filter="url(#inset-shadow)" cx="2.5" cy="2.5"/>
+        <circle id="piece1" r="1.9" fill="#333333" filter="url(#outer-shadow)" filter="url(#inset-shadow)" cx="7.5" cy="2.5"/>
+        <circle id="piece2" r="1.9" fill="#333333" filter="url(#outer-shadow)" filter="url(#inset-shadow)" cx="12.5" cy="2.5"/>
+        <circle id="piece3" r="1.9" fill="#333333" filter="url(#outer-shadow)" filter="url(#inset-shadow)" cx="17.5" cy="2.5"/>
+        <circle id="piece4" r="1.9" fill="#333333" filter="url(#outer-shadow)" filter="url(#inset-shadow)" cx="22.5" cy="2.5"/>
 
-        <use id="piece" href="#piece-white" x="47.5" y="2.5"/>
-        <use id="piece" href="#piece-white" x="52.5" y="2.5"/>
-        <use id="piece" href="#piece-white" x="57.5" y="2.5"/>
-        <use id="piece" href="#piece-white" x="62.5" y="2.5"/>
-        <use id="piece" href="#piece-white" x="67.5" y="2.5"/>
+        <circle id="piece5" r="1.9" fill="#FFFFFF" filter="url(#outer-shadow)" filter="url(#inset-shadow)" cx="47.5" cy="2.5"/>
+        <circle id="piece6" r="1.9" fill="#FFFFFF" filter="url(#outer-shadow)" filter="url(#inset-shadow)" cx="52.5" cy="2.5"/>
+        <circle id="piece7" r="1.9" fill="#FFFFFF" filter="url(#outer-shadow)" filter="url(#inset-shadow)" cx="57.5" cy="2.5"/>
+        <circle id="piece8" r="1.9" fill="#FFFFFF" filter="url(#outer-shadow)" filter="url(#inset-shadow)" cx="62.5" cy="2.5"/>
+        <circle id="piece9" r="1.9" fill="#FFFFFF" filter="url(#outer-shadow)" filter="url(#inset-shadow)" cx="67.5" cy="2.5"/>
+
     </svg>
     <div class="mx-auto text-center text-light rounded-9">
         <a class="btn btn-warning m-1 mx-auto" style="font-size: 12px; font-weight: 300; border-radius: 25px; color: white;" href="#">RESTART</a>
     </div>
-
-    <div style="text-align:center" onload="init()">
-        <svg width="600" height="400" viewBox="0 0 200 200"
-            xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink">
-        
-            <circle id="circle" cx="100" cy="100" r="30"
-                style="fill:#0a7a20; stroke: black"/>
-        </svg>
-    </div>
-
-
 {% endblock %}
