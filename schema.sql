@@ -1,8 +1,9 @@
-DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS login;
 
-CREATE TABLE posts (
+CREATE TABLE login (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL
+    user TEXT NOT NULL,
+    pswd TEXT NOT NULL
 );
+
+INSERT INTO login (user, pswd) VALUES ('xyz', 'XYZ123abc');

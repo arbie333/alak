@@ -35,7 +35,7 @@ class Alak:
             'new_position': int(-1),
             'suicide': False,
             'valid': True,
-            'win': False
+            'win': 0
         }
 
     def update_location(self):
@@ -44,15 +44,11 @@ class Alak:
         self.o_pos = np.asarray(self.board<0).nonzero()[0]
     
     def move(self, turn, old, new):
-        print('turn', turn)
-        print("self.moveX", self.moveX)
         if turn == 1:
             if self.moveX == 'interactive':
                 original_loc, next_loc, capture = self.move_interactive(turn, old, new)
             if self.moveX == 'model':
-                print("move model: ", self.board)
                 original_loc, next_loc, capture = self.move_model(turn)
-                print("move captured", capture)
 
             self.json["blackCaptured"] = capture
             self.json['old_position'] = original_loc
@@ -62,24 +58,17 @@ class Alak:
             if self.moveO == 'interactive':
                 original_loc, next_loc, capture = self.move_interactive(turn, old, new)
             if self.moveO == 'model':
-                print("move model: ", self.board)
                 original_loc, next_loc, capture = self.move_model(turn)
-                
+
             self.json['old_position'] = original_loc
             self.json['new_position'] = next_loc
             self.json["whiteCaptured"] = capture
 
-        print("JSON BLACK CAPTURED", self.json["blackCaptured"])
-        print("JSON WHITE CAPTURED", self.json["whiteCaptured"])
-
         self.board[next_loc] = self.board[original_loc]
         self.board[original_loc] = 0
-        print("after move model", self.board)
 
         self.update_location()
         self.json['board'] = self.board
-
-        print("old : {}, new = {}".format(original_loc, next_loc))
 
         return original_loc, next_loc, capture
     
@@ -119,7 +108,8 @@ class Alak:
             self.takeSuicide(original_loc, next_loc, turn)
             self.update_location()
             self.json['suicide'] = True
-        print("move_interactive captured", capture)
+            print("suicide move")
+        
         return original_loc, next_loc, capture
     
     def move_model(self, turn):
@@ -190,8 +180,6 @@ class Alak:
         original_loc, next_move = moves[max_idx][0], moves[max_idx][1]
         b, capture = self.checkCapture(self.board, original_loc, next_move, turn)
         self.update_location()
-        print("model turn", turn)
-        print("Model move {} {}".format(original_loc, next_move))
         return original_loc, next_move, capture
     
     def isSuicide(self, original_loc, next_move, turn):
@@ -249,6 +237,7 @@ class Alak:
     def checkCapture(self, board, original_loc, next_move, turn, change=True):
         capture = []
         size = len(board)
+        
         # capture left
         if next_move > 0:
             left = next_move - 1
@@ -256,37 +245,35 @@ class Alak:
             while left > 0 and board[left] == -1 * turn:
                 left -= 1
 
-            if board[left] == turn:
-                if left == original_loc:
-                    return board, capture
+            if board[left] == turn and left != original_loc:
                 for i in range(left+1, next_move):
                     if change:
                         board[i] = 0
                         capture.append(i)
-                    
+        
+        #capture right
         if next_move < size - 1:
             right = next_move + 1
 
-            while right < size-1 and board[right] == -1 * turn:
+            while right < size - 1 and board[right] == -1 * turn:
                 right += 1
 
-            if board[right] == turn:
-                if right == original_loc:
-                    return board, capture
+            if board[right] == turn and right != original_loc:
                 for i in range(next_move + 1, right):
                     if change:
                         board[i] = 0
                         capture.append(i)
-        
+
         return board, capture
         
     def one_round(self, old, new):
-        print("one round self.moveX", self.moveX)
         # x move
         turn = 1
         gain = self.move(turn, old, new)
-        
-        print("one round self.moveO", self.moveO)
+
+        if self.won() == 1:
+            return gain
+
         # o move
         turn = -1
         gain = self.move(turn, old, new)
@@ -300,27 +287,15 @@ class Alak:
             return -1
         else:
             return 0
-    
-    # def play(self, old, new):
-    #     self.__init__(self.moveX, self.moveO, self.print_result, self.clf)
-    #     
-    #     round_count = 0
-    #     gain = 0
-    #     while self.won() == 0:
-    #         gain = self.one_round(old, new, board)
-    #         round_count += 1
-    #     return gain, self.won()
 
     def getNext(self, old, new, board):
-        print("getNext self.moveX", self.moveX)
-        print("getNext self.moveO", self.moveO)
         boardLst = [int(i) for i in board.split(',')]
-        print("getNext board", [int(i) for i in board.split(',')])
 
         self.board = np.array(boardLst, dtype=np.int8)
         self.update_location()
         self.one_round(old, new)
 
+        self.json['win'] = self.won()
         self.json['board'] = self.board.tolist()
         self.json['old_position'] = int(self.json['old_position'])
         self.json['new_position'] = int(self.json['new_position'])
