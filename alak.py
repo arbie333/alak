@@ -3,12 +3,7 @@ import numpy as np
 from itertools import product
 import copy
 import pickle
-
-from flask import Blueprint, jsonify
 import json
-
-
-# alak_blueprint = Blueprint('alak_blueprint', __name__)
 
 class Alak:
     def __init__(self, moveX = 'random', moveO = 'random', print_result = False):

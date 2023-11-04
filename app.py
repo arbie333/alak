@@ -1,7 +1,4 @@
-from flask import Flask, render_template, url_for, flash, request, redirect, Response
-from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, current_user
-from forms import LoginForm
-import sqlite3
+from flask import Flask, render_template
 import alak # the alak playing model
 
 app = Flask(__name__)
@@ -30,43 +27,9 @@ def record():
 def ranking():
     return render_template('ranking.html')
 
-login_manager = LoginManager(app)
-login_manager.login_view = "login"
-
-class User(UserMixin):
-    def __init__(self, id, user, pswd):
-        self.id = str(id)
-        self.user = user
-        self.pswd = pswd
-        self.authenticated = False
-    def is_anonymous(self):
-        return False
-    def is_authenticated(self):
-        return self.authenticated
-    def is_active(self):
-        return True
-    def get_id(self):
-        return self.id
-
 @app.route('/signIn')
 def signIn():
-    if current_user.is_authenticated:
-        return redirect(url_for('profile'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        conn = sqlite3.connect('login.db')
-        curs = conn.cursor()
-        curs.execute("SELECT * FROM login where user = (?)", [form.user.data])
-        user = list(curs.fetchone())
-        Us = load_user(user[0])
-        if form.user.data == Us.user and form.pswd.data == Us.pswd:
-            user(Us, remember=form.remember.data)
-            userName = list({form.user.data})[0]
-            flash('Logged in successfully ' + userName)
-            redirect(url_for('game'))
-        else:
-            flash('Login Unsuccessfull.')
-    return render_template('signIn.html',title='signIn', form=form)
+    return render_template('signIn.html')
 
 @app.route('/signUp')
 def signUp():
