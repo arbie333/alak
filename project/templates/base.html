@@ -19,15 +19,26 @@
       <a class="navbar-brand ml-sm-2">Alak</a>
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
-          <a class="nav-item nav-link" href="{{ url_for('main.index')}}">New Game</a>
+          {% if current_user.is_authenticated %}
+            <a class="nav-item nav-link" href="{{ url_for('main.game')}}">New Game</a>
+          {% endif %}
+          {% if not current_user.is_authenticated %}
+            <a class="nav-item nav-link" href="{{ url_for('main.index')}}">New Game</a>
+          {% endif %}
           <a class="nav-item nav-link" href="{{ url_for('main.record')}}">Record</a>
           <a class="nav-item nav-link" href="{{ url_for('main.ranking')}}">Ranking</a>
         </div>
       </div>
+      {% if current_user.is_authenticated %}
+        <a class="btn-outline-warning">Welcome, {{ name }}!</a>
+        <a class="btn text-secondary mr-sm-2" style="font-size: 12px;" href="{{ url_for('auth.logout') }}" >LOG OUT</a>
+      {% endif %}
+      {% if not current_user.is_authenticated %}
       <div class="form-inline my-2 my-lg-0">
         <a class="btn text-secondary mr-sm-2" style="font-size: 12px;" href="{{ url_for('auth.signup')}}">SIGN UP</a>
         <a class="btn btn-outline-warning my-2 mr-sm-2" style="font-size: 12px;" href="{{ url_for('auth.signin')}}">SIGN IN</a>
       </div>
+      {% endif %}
     </nav>
     
     {% block content %} {% endblock %}

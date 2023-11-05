@@ -17,7 +17,7 @@ def create_app():
         db.create_all()
 
     login_manager = LoginManager()
-    login_manager.login_view = 'auth.login'
+    login_manager.login_view = 'auth.signin'
     login_manager.init_app(app)
 
     from .models import User

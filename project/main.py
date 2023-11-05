@@ -9,16 +9,14 @@ main = Blueprint('main', __name__)
 def index():
     return render_template('index.html')
 
-@main.route('/profile')
-@login_required
-
-def profile():
-    return render_template('profile.html', name=current_user.name)
-
 @main.route('/game')
 def game():
     model_moves = [0, 1]
-    return render_template('game.html', model_moves=model_moves)
+    try:
+        displayed_name = current_user.name
+    except:
+        displayed_name = "our guest"
+    return render_template('game.html', model_moves=model_moves, name=displayed_name)
 
 @main.route('/move/<int:old>/<int:new>/<board>')
 def get_move(old, new, board):
@@ -29,11 +27,11 @@ def get_move(old, new, board):
 
 @main.route('/record')
 def record():
-    return render_template('record.html')
+    return render_template('record.html', name=current_user.name)
 
 @main.route('/ranking')
 def ranking():
-    return render_template('ranking.html')
+    return render_template('ranking.html', name=current_user.name)
 
 if __name__ == "__main__":
     main.run()
