@@ -14,6 +14,7 @@ CREATE TABLE record (
     user_id TEXT NOT NULL,
     user_name TEXT NOT NULL,
     time TEXT NOT NULL,
+    second INTEGER NOT NULL,
     result TEXT NOT NULL,
     date TEXT NOT NULL
 );

@@ -46,7 +46,7 @@ def addRecord(json, seconds):
         res = "LOSE"
     try:
         user = User.query.filter_by(name=current_user.name).first()
-        record = Record(user_id=user.id, user_name=user.name, time=timeStr, result=res, date=date.today().strftime("%d/%m/%Y"))
+        record = Record(user_id=user.id, user_name=user.name, time=timeStr, second=seconds, result=res, date=date.today().strftime("%d/%m/%Y"))
         db.session.add(record)
         db.session.commit()
     except:
@@ -64,7 +64,7 @@ def ranking():
         displayed_name = current_user.name
     except:
         displayed_name = "our guest"
-    record = Record.query.filter_by(result="WIN").order_by(Record.time).limit(10).all()
+    record = Record.query.filter_by(result="WIN").order_by(Record.second).limit(10).all()
     return render_template('ranking.html', result=record, name=displayed_name)
 
 if __name__ == "__main__":

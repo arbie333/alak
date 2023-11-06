@@ -13,5 +13,6 @@ class Record(db.Model):
     user_id = db.Column(db.String(50))
     user_name = db.Column(db.String(50))
     time = db.Column(db.String(50))
+    second = db.Column(db.Integer())
     result = db.Column(db.String(50))
     date = db.Column(db.String(50))
