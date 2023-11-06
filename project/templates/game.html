@@ -22,6 +22,52 @@
             Snap("#piece2").drag(dragMove, dragStart, dragEnd);
             Snap("#piece3").drag(dragMove, dragStart, dragEnd);
             Snap("#piece4").drag(dragMove, dragStart, dragEnd);
+            reset();
+        }
+
+        // time counter
+        var minutesLabel = document.getElementById("minutes");
+        var secondsLabel = document.getElementById("seconds");
+        var totalSecond = 0;
+        var interval = false;
+        setInterval(setTime, 1000);
+
+        function displayTimer(totalSeconds) {
+            document.getElementById('seconds').innerHTML = pad(totalSeconds % 60);
+            document.getElementById('minutes').innerHTML = pad(parseInt(totalSeconds / 60));
+        }
+
+        function update() {
+            ++totalSeconds;
+            displayTimer(totalSeconds);
+        }
+
+        function pad(val) {
+            var valString = val + "";
+            if (valString.length < 2) {
+                return "0" + valString;
+            } else {
+                return valString;
+            }
+        }
+
+        function startTimer() {
+            if (!interval) {
+                totalSecond++;
+                interval = setInterval(update, 1000);
+            }
+        }
+
+        function stopTimer() {
+            if (interval) {
+                clearInterval(interval);
+                interval = null;
+            }
+        }
+
+        function resetTimer() {
+            totalSeconds = 0;
+            displayTimer(totalSeconds);
         }
 
         function reset() {
@@ -36,13 +82,14 @@
             }
 
             console.log("reset" + board);
+            gameStart = false;
+            resetTimer();
         }
         
         function dragStart(x, y, evt) {
             if (!gameStart) {
                 gameStart = true;
-                reset();
-                totalSeconds = 0;
+                startTimer();
             }
 
             sX = parseFloat(this.attr("cx"));
@@ -100,6 +147,7 @@
             if (move.win == 1) {
                 console.log("Black won!");
                 window.alert("Black won!");
+                stopTimer();
                 reset();
                 return;
             }
@@ -117,6 +165,7 @@
             if (move.win == -1) {
                 console.log("White won!");
                 window.alert("White won!");
+                stopTimer();
                 reset();
                 return;
             }
@@ -127,29 +176,6 @@
 
             console.log("getAPI" + board);
             console.log("getAPI" + boardForAPI);
-        }
-
-        // time counter
-        var minutesLabel = document.getElementById("minutes");
-        var secondsLabel = document.getElementById("seconds");
-        var totalSeconds;
-        setInterval(setTime, 1000);
-        minutesLabel.innerHTML = pad(0);
-        secondsLabel.innerHTML = pad(0);
-
-        function setTime() {
-            ++totalSeconds;
-            document.getElementById('seconds').innerHTML = pad(totalSeconds % 60);
-            document.getElementById('minutes').innerHTML = pad(parseInt(totalSeconds / 60));
-        }
-
-        function pad(val) {
-            var valString = val + "";
-            if (valString.length < 2) {
-                return "0" + valString;
-            } else {
-                return valString;
-            }
         }
 
         function updateBoardForAPI() {
@@ -172,13 +198,11 @@
 {% endblock %}
 
 {% block content %}
-    <div class="text-center pt-5">
-        <p id="minutes"></p>:<p id="seconds"></p>
+    <div class="timer pt-5 form-inline">
+        <p id="minutes">00</p>
+        <p> : </p>
+        <p id="seconds">00</p>
     </div>
-    <!--body onmousemove="coordinate(event)"> 
-        X-coordinate 
-        <input type="text" id="X">
-    </body-->
 
     <svg id="svg" viewBox="-7 -12 84 30" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
         <path id ="board" stroke="#401900" stroke-width="0.1" fill="none" d="M0,0h70v5h-70z" />

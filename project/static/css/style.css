@@ -1,3 +1,9 @@
+.timer {
+    margin-left: 46%;
+    margin-right: 46%;
+    text-align: center;
+}
+
 .central-square {
     background-color: rgba(245, 245, 245, .85);
     height: 50%;
