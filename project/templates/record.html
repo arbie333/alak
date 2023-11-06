@@ -7,7 +7,7 @@
     <use href="#piece-white" x="2" y="0"/>
     <use href="#piece-black" x="0" y="2"/>
 </svg>
-<div style="position: relative; top: 10%" class="square rounded-9 big-square text-center">
+    <div style="position: relative; top: 5%; overflow-x: auto;" class="square rounded-9 big-square text-center">
     <p class="text-warning text-uppercase font-weight-bold pt-3">RECORD</p>
     <table class="table">
         <thead>
@@ -15,32 +15,16 @@
             <th scope="col"></th>
             <th scope="col">Result</th>
             <th scope="col">Time</th>
-            <th scope="col">Moves</th>
             <th scope="col">Date</th>
           </tr>
         </thead>
-        <tbody>
-          <tr>
-            <th scope="row">1</th>
-            <td>WIN</td>
-            <td>01:00</td>
-            <td>24</td>
-            <td>2023-10-02</td>
-          </tr>
-          <tr>
-            <th scope="row">2</th>
-            <td>LOSE</td>
-            <td>00:50</td>
-            <td>20</td>
-            <td>2023-10-02</td>
-          </tr>
-          <tr>
-            <th scope="row">3</th>
-            <td>WIN</td>
-            <td>01:03</td>
-            <td>30</td>
-            <td>2023-10-02</td>
-          </tr>
-        </tbody>
+        {% for i in range(result | length) %}
+        <tr>
+          <th scope="row">{{ i+1 }}</th>
+          <td> {{ result[i].result }} </td>
+          <td> {{ result[i].time }} </td>
+          <td> {{ result[i].date }} </td>
+        </tr>
+        {% endfor %}
     </table>
 </div>{% endblock %}

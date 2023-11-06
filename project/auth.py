@@ -20,7 +20,7 @@ def signin_post():
     user = User.query.filter_by(email=email).first()
     
     if not user or not check_password_hash(user.password, password):
-        print('Please check your login details and try again.')
+        flash('Please check your login details and try again.')
         return redirect(url_for('auth.signin')) # if the user doesn't exist or password is wrong, reload the page
 
     login_user(user, remember=remember)
@@ -30,7 +30,6 @@ def signin_post():
 @auth.route('/logout')
 @login_required
 def logout():
-    print("log out")
     logout_user()
     return redirect(url_for('main.index'))
 
@@ -40,24 +39,24 @@ def signup():
 
 @auth.route('/signup', methods=['POST'])
 def signup_post():
-    print("signup")
     email = request.form.get('email')
     name = request.form.get('name')
     password = request.form.get('password')
 
+    if email == "" or name == "" or password == "":
+        flash("Invalid input")
+        return redirect(url_for('auth.signup'))
+
     user = User.query.filter_by(email=email).first() # if this returns a user, then the email already exists in database
 
     if user: # if a user is found, we want to redirect back to signup page so user can try again
-        print('user already exist')
         flash('Email address already exists')
         return redirect(url_for('auth.signin'))
 
     # create a new user with the form data. Hash the password so the plaintext version isn't saved.
     new_user = User(email=email, name=name, password=generate_password_hash(password))
-    print('new user created')
     # add the new user to the database
     db.session.add(new_user)
     db.session.commit()
     
-    print('redirect to sign in')
     return redirect(url_for('auth.signin'))

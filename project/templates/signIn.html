@@ -3,13 +3,6 @@
 {% block title %}Sign in Alak{% endblock %}
 
 {% block content %}
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <div class="notification is-danger">
-            {{ messages[0] }}
-        </div>
-    {% endif %}
-    {% endwith %}
     <form method="POST" action="/signin">
         <div class="row justify-content-center mx-auto" style="margin-top: 10%; margin-bottom: 10%;">
             <div class="col-lg-3 left-side mx-auto">
@@ -20,6 +13,13 @@
             </div>
             <div class="col-lg-3 right-side square rounded-9 right-square text-center">
                 <p class="text-warning text-uppercase font-weight-bold pt-5">Sign in To Alak</p>
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="notification is-danger text-danger m-2">
+                        {{ messages[0] }}
+                    </div>
+                {% endif %}
+                {% endwith %}
                 <form method="POST" action="/signin">
                     <div class="form-group m-2">
                         <div class="control">

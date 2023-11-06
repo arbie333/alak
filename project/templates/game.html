@@ -30,14 +30,15 @@
         var secondsLabel = document.getElementById("seconds");
         var totalSecond = 0;
         var interval = false;
-        setInterval(setTime, 1000);
 
         function displayTimer(totalSeconds) {
             document.getElementById('seconds').innerHTML = pad(totalSeconds % 60);
             document.getElementById('minutes').innerHTML = pad(parseInt(totalSeconds / 60));
         }
 
+        var timeRecord = 0;
         function update() {
+            timeRecord++;
             ++totalSeconds;
             displayTimer(totalSeconds);
         }
@@ -52,6 +53,7 @@
         }
 
         function startTimer() {
+            timeRecord = 0;
             if (!interval) {
                 totalSecond++;
                 interval = setInterval(update, 1000);
@@ -66,6 +68,7 @@
         }
 
         function resetTimer() {
+            timeRecord = 0;
             totalSeconds = 0;
             displayTimer(totalSeconds);
         }
@@ -128,9 +131,10 @@
         }
 
         async function getAPIAndUpdateBoard() {
-            console.log("getAPI begin " + boardForAPI);
-            const response = await fetch("move/" + old_move + "/" + next_move + "/" + boardForAPI);
+            const response = await fetch("move/" + old_move + "/" + next_move + "/" + boardForAPI + "/" + timeRecord);
             const move = await response.json();
+
+            console.log('timeRecord ' + timeRecord);
 
             console.log("black move: " + old_move + " " + next_move);
 
@@ -223,12 +227,7 @@
     <div class="mx-auto text-center text-light rounded-9">
         <a class="btn btn-warning m-1 mx-auto" style="font-size: 12px; font-weight: 300; border-radius: 25px; color: white;" href="#" onclick="reset();">RESTART</a>
     </div>
-    <!-- Button trigger modal -->
-    <!-- button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
-        Launch demo modal
-    </button -->
     
-    <!-- Modal -->
     <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">

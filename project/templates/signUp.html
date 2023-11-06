@@ -3,13 +3,6 @@
 {% block title %}Sign up Alak{% endblock %}
 
 {% block content %}
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <div class="notification is-danger">
-            {{ messages[0] }}. Go to <a href="{{ url_for('auth.signin') }}">login page</a>.
-        </div>
-    {% endif %}
-    {% endwith %}
     <div class="row justify-content-center mx-auto" style="margin-top: 10%; margin-bottom: 10%;">
         <div class="col-lg-3 left-side mx-auto">
             <svg id="svg" viewBox="0 -2.5 7 7" xmlns="http://www.w3.org/2000/svg" width="500px" height="300px">
@@ -17,15 +10,16 @@
                 <use href="#piece-black" x="0" y="2"/>
             </svg>
         </div>
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="notification is-danger">
-                {{ messages[0] }}
-            </div>
-        {% endif %}
-        {% endwith %}
+
         <div class="col-lg-3 right-side square rounded-9 right-square text-center">
             <p class="text-warning text-uppercase font-weight-bold pt-5">Sign up To Alak</p>
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="notification is-danger text-danger m-2">
+                    {{ messages[0] }}
+                </div>
+            {% endif %}
+            {% endwith %}
             <form method="POST" action="/signup">
                 <div class="field form-group m-2">
                     <div class="control">
@@ -44,14 +38,10 @@
                         <input class="input is-large" type="password" name="password" placeholder="Your Password">
                     </div>
                 </div>
-
-                <div class="field form-group m-2">
-                    <label class="checkbox">
-                        <input type="checkbox" name="remember">
-                        Remember me
-                    </label>
+                <div class="btn-group-vertical mx-auto text-center text-light rounded-9 p-1">
+                    <button class="button btn-warning m-1 mx-auto is-block is-info is-large is-fullwidth" style="font-size: 12px; font-weight: 300; border-radius: 25px; color: white;" href="#">CREATE</button>
+                    <a class="text-warning m-1 mx-auto" style="font-size: 12px; font-weight: 300;" href="{{ url_for('auth.signin')}}">ALREADY HAD AN ACCOUNT?</a>
                 </div>
-                <button class="button is-block is-info is-large is-fullwidth">Sign Up</button>
             </form>
         </div>
 
