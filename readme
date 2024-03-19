@@ -1,0 +1,2 @@
+export FLASK_ENV=project
+flask --app project run

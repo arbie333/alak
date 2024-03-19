@@ -100,7 +100,8 @@
         }
         
         function dragMove(dx, dy, x, y, evt) {
-            this.attr({cx: (sX + (dx/17)), cy: (sY + (dy/17))});
+            var dev = window.innerWidth / 85;
+            this.attr({cx: (sX + (dx/dev)), cy: (sY + (dy/dev))});
         }
         
         function dragEnd(evt) {
