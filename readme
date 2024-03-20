@@ -1,2 +1,4 @@
-export FLASK_ENV=project
-flask --app project run
+Run these two commands to start it:
+
+`export FLASK_ENV=project`
+`flask --app project run`
